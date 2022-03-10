@@ -3,4 +3,6 @@ test/thumbnails
 test/test-screen.png
 *.iml
 .idea
+.DS_Store
+*.xml
 
