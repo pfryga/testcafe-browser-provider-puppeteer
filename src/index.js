@@ -75,8 +75,8 @@ module.exports = {
 
     async takeScreenshot(id, screenshotPath, width, height, fullPage) {
         await this.openedPages[id].screenshot({path: screenshotPath, fullPage});
-        console.log('Screenshot created:', screenshotPath);
-        console.log('for next 10 seconds created screenshot contains full page...');
+        console.log(`please open ${screenshotPath} screenshot. For next 10 seconds created screenshot contains full page (proper behavior)`);
         await timeout(10000);
+        console.log(`...and now open the same screenshot again (${screenshotPath}). Now it contains only visible in viewport part of page`);
     },
 };
