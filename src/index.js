@@ -1,69 +1,82 @@
 const puppeteer = require('puppeteer');
 
+const timeout = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 module.exports = {
-  // Multiple browsers support
-  isMultiBrowser: true,
+    // Multiple browsers support
+    isMultiBrowser: true,
 
-  browser: null,
+    browser: null,
 
-  openedPages: {},
+    openedPages: {},
 
-  // Required - must be implemented
-  // Browser control
-  async openBrowser(id, pageUrl, browserName) {
-    const browserArgs = browserName.split(':');
-    if (!this.browser) {
-      const launchArgs = {
-        timeout: 10000,
-      };
+    // Required - must be implemented
+    // Browser control
+    async openBrowser(id, pageUrl, browserName) {
+        const browserArgs = browserName.split(':');
+        if (!this.browser) {
+            const launchArgs = {
+                timeout: 10000,
+            };
 
-      const noSandboxArgs = ['--no-sandbox', '--disable-setuid-sandbox'];
+            const noSandboxArgs = ['--no-sandbox', '--disable-setuid-sandbox'];
 
-      if (browserArgs.indexOf('no_sandbox') !== -1) { launchArgs.args = noSandboxArgs; } else if (browserName.indexOf('?') !== -1) {
-        const userArgs = browserName.split('?');
-        const params = userArgs[0];
+            if (browserArgs.indexOf('no_sandbox') !== -1) {
+                launchArgs.args = noSandboxArgs;
+            } else if (browserName.indexOf('?') !== -1) {
+                const userArgs = browserName.split('?');
+                const params = userArgs[0];
 
-        if (params === 'no_sandbox') { launchArgs.args = noSandboxArgs; }
+                if (params === 'no_sandbox') {
+                    launchArgs.args = noSandboxArgs;
+                }
 
-        const executablePath = userArgs[1];
+                const executablePath = userArgs[1];
 
-        if (executablePath.length > 0) { launchArgs.executablePath = executablePath; }
-      }
-      this.browser = await puppeteer.launch(launchArgs);
-    }
+                if (executablePath.length > 0) {
+                    launchArgs.executablePath = executablePath;
+                }
+            }
+            this.browser = await puppeteer.launch(launchArgs);
+        }
 
-    const page = await this.browser.newPage();
+        const page = await this.browser.newPage();
 
-    const emulationArg = browserArgs.find((v) => /^emulate/.test(v));
+        const emulationArg = browserArgs.find((v) => /^emulate/.test(v));
 
-    if (emulationArg) {
-      const [, emulationDevice] = emulationArg.split('=');
-      const device = puppeteer.devices[emulationDevice];
+        if (emulationArg) {
+            const [, emulationDevice] = emulationArg.split('=');
+            const device = puppeteer.devices[emulationDevice];
 
-      if (!device) { throw new Error('Emulation device is not supported'); }
+            if (!device) {
+                throw new Error('Emulation device is not supported');
+            }
 
-      await page.emulate(device);
-    }
+            await page.emulate(device);
+        }
 
-    await page.goto(pageUrl, { waitUntil: 'networkidle0' });
-    this.openedPages[id] = page;
-  },
+        await page.goto(pageUrl, {waitUntil: 'networkidle0', timeout: 0});
+        this.openedPages[id] = page;
+    },
 
-  async closeBrowser(id) {
-    delete this.openedPages[id];
-    await this.browser.close();
-  },
+    async closeBrowser(id) {
+        delete this.openedPages[id];
+        await this.browser.close();
+    },
 
-  async isValidBrowserName() {
-    return true;
-  },
+    async isValidBrowserName() {
+        return true;
+    },
 
-  // Extra methods
-  async resizeWindow(id, width, height) {
-    await this.openedPages[id].setViewport({ width, height });
-  },
+    // Extra methods
+    async resizeWindow(id, width, height) {
+        await this.openedPages[id].setViewport({width, height});
+    },
 
-  async takeScreenshot(id, screenshotPath) {
-    await this.openedPages[id].screenshot({ path: screenshotPath });
-  },
+    async takeScreenshot(id, screenshotPath, width, height, fullPage) {
+        await this.openedPages[id].screenshot({path: screenshotPath, fullPage});
+        console.log('Screenshot created:', screenshotPath);
+        console.log('for next 10 seconds created screenshot contains full page...');
+        await timeout(10000);
+    },
 };
