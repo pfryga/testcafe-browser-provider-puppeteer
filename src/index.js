@@ -68,6 +68,18 @@ module.exports = {
         return true;
     },
 
+    async hasCustomActionForBrowser (/* browserId */) {
+        return {
+            hasCloseBrowser:                this.hasOwnProperty('closeBrowser'),
+            hasResizeWindow:                this.hasOwnProperty('resizeWindow'),
+            hasTakeScreenshot:              this.hasOwnProperty('takeScreenshot'),
+            hasGetVideoFrameData:           this.hasOwnProperty('getVideoFrameData'),
+            hasCanResizeWindowToDimensions: this.hasOwnProperty('canResizeWindowToDimensions'),
+            hasMaximizeWindow:              this.hasOwnProperty('maximizeWindow'),
+            hasChromelessScreenshots:       false,
+        };
+    },
+
     // Extra methods
     async resizeWindow(id, width, height) {
         await this.openedPages[id].setViewport({width, height});
